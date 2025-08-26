@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pomodoro Pro</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+    :root {
+      --primary: #5b21b6;
+      --primary-dark: #4c1d95;
+      --secondary: #34d399;
+      --background: #f9fafb;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --text-muted: #6b7280;
+      --shadow: 0 8px 30px rgba(0, 0, 0, 0.05), inset 0 0 8px rgba(255, 255, 255, 0.5);
+      --shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.1);
+      --border: #e5e7eb;
+      --dark-bg: #111827;
+      --dark-card-bg: #1e293b;
+      --dark-text: #e2e8f0;
+      --dark-text-muted: #94a3b8;
+      --dark-border: #374151;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      background: linear-gradient(135deg, var(--background), #e0f2fe);
+      color: var(--text);
+      transition: background 0.3s, color 0.3s;
+      padding: 80px 10px 20px;
+      overflow-x: hidden;
+    }
+
+    body.dark {
+      background: linear-gradient(135deg, var(--dark-bg), #1e3a8a);
+      color: var(--dark-text);
+    }
+
+    #topBar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      padding: 12px 10px;
+      display: flex;
+      justify-content: center;
+      z-index: 1100;
+      box-shadow: var(--shadow);
+      border-bottom-left-radius: 16px;
+      border-bottom-right-radius: 16px;
+    }
+
+    #topBar div {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      align-items: center;
+      max-width: 100%;
+    }
+
+    #topBar button {
+      background: var(--card-bg);
+      color: var(--primary);
+      font-weight: 500;
+      border-radius: 10px;
+      padding: 10px 16px;
+      border: none;
+      cursor: pointer;
+      box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+      font-size: 0.95rem;
+      white-space: nowrap;
+    }
+
+    body.dark #topBar button {
+      background: var(--dark-card-bg);
+      color: var(--secondary);
+    }
+
+    #topBar button:hover {
+      background: var(--secondary);
+      color: var(--dark-bg);
+      transform: translateY(-2px);
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-align: center;
+    }
+
+    .timer-container {
+      position: relative;
+      width: 280px;
+      height: 280px;
+      margin-bottom: 1.5rem;
+      background: var(--card-bg);
+      border-radius: 50%;
+      box-shadow: var(--shadow);
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+
+    body.dark .timer-container {
+      background: var(--dark-card-bg);
+    }
+
+    svg {
+      transform: rotate(-90deg);
+      width: 100%;
+      height: 100%;
+    }
+
+    circle {
+      fill: none;
+      stroke-width: 16;
+      stroke-linecap: round;
+      transition: stroke 0.5s, stroke-dashoffset 0.5s ease-out;
+    }
+
+    #backgroundCircle {
+      stroke: var(--border);
+    }
+
+    body.dark #backgroundCircle {
+      stroke: var(--dark-border);
+    }
+
+    #progressCircle {
+      stroke: var(--primary);
+      stroke-dasharray: 754;
+      stroke-dashoffset: 754;
+      filter: drop-shadow(0 0 8px rgba(91, 33, 182, 0.5));
+    }
+
+    body.dark #progressCircle {
+      filter: drop-shadow(0 0 8px rgba(167, 139, 250, 0.5));
+    }
+
+    #pomodoroTimer {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 2.5rem;
+      font-weight: 600;
+      color: var(--text);
+      transition: color 0.3s;
+    }
+
+    body.dark #pomodoroTimer {
+      color: var(--dark-text);
+    }
+
+    #status {
+      margin-top: 0.5rem;
+      font-weight: 500;
+      font-size: 1.1rem;
+      color: var(--primary);
+      transition: color 0.3s, transform 0.3s;
+      animation: pulse 2s infinite;
+      text-align: center;
+    }
+
+    body.dark #status {
+      color: var(--secondary);
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .controls {
+      margin-top: 1rem;
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    button {
+      padding: 12px 24px;
+      font-size: 0.95rem;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 500;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      box-shadow: var(--shadow);
+      transition: all 0.3s ease;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    button:disabled {
+      background: var(--text-muted);
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    body.dark button:disabled {
+      background: var(--dark-text-muted);
+    }
+
+    .time-options {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      max-width: 100%;
+    }
+
+    .time-options button {
+      padding: 8px 16px;
+      font-size: 0.9rem;
+      background: var(--card-bg);
+      color: var(--text);
+      box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.05);
+      border-radius: 10px;
+    }
+
+    body.dark .time-options button {
+      background: var(--dark-card-bg);
+      color: var(--dark-text);
+    }
+
+    .time-options button.active {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 0 8px rgba(91, 33, 182, 0.3);
+    }
+
+    body.dark .time-options button.active {
+      background: var(--secondary);
+      color: var(--dark-bg);
+    }
+
+    #darkModeToggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: var(--primary);
+      color: white;
+      box-shadow: var(--shadow);
+      transition: all 0.3s ease;
+      font-size: 0.95rem;
+    }
+
+    #darkModeToggle:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+
+    #cyclesDisplay {
+      margin-top: 1rem;
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    body.dark #cyclesDisplay {
+      color: var(--dark-text-muted);
+    }
+
+    /* Large Tablets (1024px and below) */
+    @media (max-width: 1024px) {
+      h1 { font-size: 2.2rem; }
+      .timer-container { width: 260px; height: 260px; }
+      #pomodoroTimer { font-size: 2.2rem; }
+      .controls button { padding: 10px 20px; font-size: 0.9rem; }
+      .time-options button { padding: 7px 14px; font-size: 0.85rem; }
+      #status { font-size: 1rem; }
+      #topBar { padding: 10px; }
+      #topBar button { padding: 8px 12px; font-size: 0.9rem; }
+      #darkModeToggle { padding: 9px 13px; font-size: 0.9rem; }
+    }
+
+    /* Medium Tablets and Large Phones (768px and below) */
+    @media (max-width: 768px) {
+      h1 { font-size: 2rem; }
+      .timer-container { width: 240px; height: 240px; }
+      #pomodoroTimer { font-size: 2rem; }
+      .controls button { padding: 9px 18px; font-size: 0.85rem; }
+      .time-options { gap: 0.4rem; }
+      .time-options button { padding: 6px 12px; font-size: 0.8rem; }
+      #status { font-size: 0.95rem; }
+      #topBar { padding: 8px; }
+      #topBar button { padding: 7px 10px; font-size: 0.85rem; }
+      #darkModeToggle { padding: 8px 12px; font-size: 0.85rem; }
+      body { padding: 70px 8px 15px; }
+    }
+
+    /* Small Phones (480px and below) */
+    @media (max-width: 480px) {
+      h1 { font-size: 1.6rem; }
+      .timer-container { width: 200px; height: 200px; }
+      #pomodoroTimer { font-size: 1.8rem; }
+      .controls { gap: 0.3rem; }
+      .controls button { padding: 8px 16px; font-size: 0.8rem; }
+      .time-options { gap: 0.3rem; }
+      .time-options button { padding: 5px 10px; font-size: 0.75rem; }
+      #status { font-size: 0.9rem; }
+      #topBar { padding: 6px; }
+      #topBar button { padding: 6px 8px; font-size: 0.75rem; }
+      #darkModeToggle { padding: 7px 10px; font-size: 0.8rem; top: 15px; right: 15px; }
+      #cyclesDisplay { font-size: 0.9rem; }
+      body { padding: 60px 6px 10px; }
+    }
+
+    /* Extra Small Phones (360px and below) */
+    @media (max-width: 360px) {
+      h1 { font-size: 1.4rem; }
+      .timer-container { width: 180px; height: 180px; }
+      #pomodoroTimer { font-size: 1.6rem; }
+      .controls { flex-direction: column; align-items: center; }
+      .controls button { padding: 7px 14px; font-size: 0.75rem; width: 100%; max-width: 200px; }
+      .time-options { gap: 0.2rem; }
+      .time-options button { padding: 5px 8px; font-size: 0.7rem; }
+      #status { font-size: 0.85rem; }
+      #topBar { padding: 5px; }
+      #topBar button { padding: 5px 7px; font-size: 0.7rem; width: 45%; text-align: center; }
+      #darkModeToggle { padding: 6px 8px; font-size: 0.75rem; top: 10px; right: 10px; }
+      #cyclesDisplay { font-size: 0.85rem; }
+      body { padding: 50px 5px 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="topBar">
+    <div style="margin: 0 auto; display: flex; gap: 8px; align-items: center;">
+      <button onclick="window.location.href='index.html'">Volver al Calendario 📅</button>
+      <button onclick="window.location.href='notasrapidas.html'">Notas Rápidas 📝</button>
+    </div>
+  </div>
+
+  <h1>Pomodoro Pro ⏱</h1>
+
+  <button id="darkModeToggle">🌙 Modo Oscuro</button>
+
+  <div class="time-options">
+    <button data-min="10">10 min</button>
+    <button data-min="15">15 min</button>
+    <button data-min="20">20 min</button>
+    <button data-min="25" class="active">25 min</button>
+    <button data-min="30">30 min</button>
+    <button data-min="40">40 min</button>
+    <button data-min="50">50 min</button>
+    <button data-min="60">60 min</button>
+  </div>
+
+  <div class="timer-container">
+    <svg>
+      <circle id="backgroundCircle" cx="140" cy="140" r="120"></circle>
+      <circle id="progressCircle" cx="140" cy="140" r="120"></circle>
+    </svg>
+    <div id="pomodoroTimer">25:00</div>
+  </div>
+  <div id="status">Listo</div>
+
+  <div class="controls">
+    <button id="start">Iniciar</button>
+    <button id="pause">Pausar</button>
+    <button id="reset">Reiniciar</button>
+  </div>
+
+  <p id="cyclesDisplay">Ciclos completados: <span id="cycles">0</span></p>
+
+  <script>
+    let minutes = 25, seconds = 0;
+    let timer, running = false, cycles = 0;
+    let totalSeconds = minutes * 60;
+
+    const display = document.getElementById('pomodoroTimer');
+    const progressCircle = document.getElementById('progressCircle');
+    const cyclesDisplay = document.getElementById('cycles');
+    const status = document.getElementById('status');
+    const timeButtons = document.querySelectorAll('.time-options button');
+    const darkModeToggle = document.getElementById('darkModeToggle');
+
+    // Sound for completion (simple tone using Web Audio API)
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    function playCompletionSound() {
+      const oscillator = ctx.createOscillator();
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(440, ctx.currentTime);
+      oscillator.connect(ctx.destination);
+      oscillator.start();
+      oscillator.stop(ctx.currentTime + 0.5);
+    }
+
+    // Dark mode handling
+    function applyDarkMode() {
+      if (localStorage.getItem('darkMode') === 'true') {
+        document.body.classList.add('dark');
+        darkModeToggle.textContent = '☀️ Modo Claro';
+      } else {
+        document.body.classList.remove('dark');
+        darkModeToggle.textContent = '🌙 Modo Oscuro';
+      }
+    }
+
+    // Update timer display and button states
+    function updateDisplay() {
+      console.log('updateDisplay called:', { minutes, seconds, running });
+      display.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      const elapsed = minutes * 60 + seconds;
+      const offset = 754 - (elapsed / totalSeconds) * 754;
+      progressCircle.style.strokeDashoffset = offset;
+
+      let ratio = elapsed / totalSeconds;
+      if (ratio > 0.5) {
+        progressCircle.style.stroke = '#5b21b6';
+      } else if (ratio > 0.2) {
+        progressCircle.style.stroke = '#facc15';
+      } else {
+        progressCircle.style.stroke = '#ef4444';
+      }
+
+      const startBtn = document.getElementById('start');
+      const pauseBtn = document.getElementById('pause');
+      if (startBtn && pauseBtn) {
+        startBtn.disabled = running;
+        pauseBtn.disabled = !running;
+      } else {
+        console.error('Start or Pause button not found');
+      }
+    }
+
+    function start() {
+      if (running) {
+        console.log('Timer already running, ignoring start');
+        return;
+      }
+      console.log('Starting timer');
+      running = true;
+      status.textContent = 'En curso';
+      timer = setInterval(() => {
+        if (seconds === 0) {
+          if (minutes === 0) {
+            clearInterval(timer);
+            running = false;
+            cycles++;
+            cyclesDisplay.textContent = cycles;
+            status.textContent = 'Completado';
+            playCompletionSound();
+            alert('¡Pomodoro completado!');
+            reset(true);
+          } else {
+            minutes--;
+            seconds = 59;
+          }
+        } else {
+          seconds--;
+        }
+        updateDisplay();
+      }, 1000);
+    }
+
+    function pause() {
+      console.log('Pausing timer');
+      clearInterval(timer);
+      running = false;
+      status.textContent = 'Pausado';
+      updateDisplay();
+    }
+
+    function reset(auto = false) {
+      console.log('Resetting timer, auto:', auto);
+      clearInterval(timer);
+      running = false;
+      const activeBtn = document.querySelector('.time-options button.active');
+      if (activeBtn) {
+        minutes = parseInt(activeBtn.dataset.min);
+        seconds = 0;
+        totalSeconds = minutes * 60;
+        updateDisplay();
+        if (!auto) status.textContent = 'Listo';
+      } else {
+        console.error('No active time button found');
+      }
+    }
+
+    // Initialize everything after DOM is fully loaded
+    window.addEventListener('load', () => {
+      console.log('DOM loaded, initializing Pomodoro');
+      applyDarkMode();
+
+      // Verify DOM elements
+      if (!display || !progressCircle || !cyclesDisplay || !status) {
+        console.error('Missing DOM elements:', { display, progressCircle, cyclesDisplay, status });
+      }
+
+      // Add event listeners for control buttons
+      const startBtn = document.getElementById('start');
+      const pauseBtn = document.getElementById('pause');
+      const resetBtn = document.getElementById('reset');
+
+      if (startBtn) {
+        startBtn.addEventListener('click', () => {
+          console.log('Start button clicked');
+          start();
+        });
+      } else {
+        console.error('Start button not found');
+      }
+
+      if (pauseBtn) {
+        pauseBtn.addEventListener('click', () => {
+          console.log('Pause button clicked');
+          pause();
+        });
+      } else {
+        console.error('Pause button not found');
+      }
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+          console.log('Reset button clicked');
+          reset(false);
+        });
+      } else {
+        console.error('Reset button not found');
+      }
+
+      // Add event listeners for time buttons
+      if (timeButtons.length > 0) {
+        timeButtons.forEach(btn => {
+          btn.addEventListener('click', () => {
+            console.log('Time button clicked:', btn.dataset.min);
+            timeButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            if (!running) reset();
+          });
+        });
+      } else {
+        console.error('No time buttons found');
+      }
+
+      // Add dark mode toggle listener
+      darkModeToggle.addEventListener('click', () => {
+        console.log('Dark mode toggle clicked');
+        document.body.classList.toggle('dark');
+        const isDark = document.body.classList.contains('dark');
+        darkModeToggle.textContent = isDark ? '☀️ Modo Claro' : '🌙 Modo Oscuro';
+        localStorage.setItem('darkMode', isDark);
+      });
+
+      updateDisplay();
+    });
+
+    window.addEventListener('pageshow', applyDarkMode);
+  </script>
+</body>
+</html>

@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notas Rápidas</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+    :root {
+      --primary: #4f46e5;
+      --primary-dark: #3730a3;
+      --secondary: #6ee7b7;
+      --background: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+      --shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.1);
+      --border: #e2e8f0;
+      --dark-bg: #0f172a;
+      --dark-card-bg: #1e293b;
+      --dark-text: #e2e8f0;
+      --dark-text-muted: #94a3b8;
+      --dark-border: #334155;
+      --status-in-progress: #f59e0b; /* Yellow for En proceso */
+      --status-pending: #ef4444; /* Red for En espera */
+      --status-completed: #10b981; /* Green for Finalizado */
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--background);
+      margin: 0;
+      padding: 80px 10px 20px;
+      color: var(--text);
+      transition: background 0.3s, color 0.3s;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body.dark {
+      background: var(--dark-bg);
+      color: var(--dark-text);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 2.5rem;
+      font-weight: 600;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    #topBar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      padding: 12px 10px;
+      display: flex;
+      justify-content: center;
+      z-index: 1100;
+      box-shadow: var(--shadow);
+      border-bottom-left-radius: 16px;
+      border-bottom-right-radius: 16px;
+    }
+
+    #topBar div {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      align-items: center;
+      max-width: 100%;
+    }
+
+    #topBar button {
+      background: var(--card-bg);
+      color: var(--primary);
+      font-weight: 500;
+      border-radius: 10px;
+      padding: 10px 16px;
+      border: none;
+      cursor: pointer;
+      box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+      font-size: 0.95rem;
+      white-space: nowrap;
+    }
+
+    body.dark #topBar button {
+      background: var(--dark-card-bg);
+      color: var(--secondary);
+    }
+
+    #topBar button:hover {
+      background: var(--secondary);
+      color: var(--dark-bg);
+      transform: translateY(-2px);
+    }
+
+    #darkModeToggle {
+      position: fixed;
+      left: 15px;
+      top: 15px;
+      background: var(--primary);
+      color: white;
+      border-radius: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      box-shadow: var(--shadow);
+      z-index: 1100;
+      transition: background 0.3s, transform 0.3s;
+    }
+
+    #darkModeToggle:hover {
+      background: var(--primary-dark);
+      transform: scale(1.1);
+    }
+
+    .notes-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      transition: background 0.3s, color 0.3s;
+    }
+
+    body.dark .notes-container {
+      background: var(--dark-card-bg);
+      color: var(--dark-text);
+    }
+
+    .note-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    #searchInput, #noteTitle, #noteContent, #noteColor, #noteStatus {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-size: 0.95rem;
+      box-sizing: border-box;
+      transition: all 0.3s ease;
+      background: var(--card-bg);
+      color: var(--text);
+    }
+
+    #noteContent {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    body.dark #searchInput, body.dark #noteTitle, body.dark #noteContent, body.dark #noteColor, body.dark #noteStatus {
+      background: var(--dark-card-bg);
+      border-color: var(--dark-border);
+      color: var(--dark-text);
+    }
+
+    #searchInput:focus, #noteTitle:focus, #noteContent:focus, #noteColor:focus, #noteStatus:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 8px rgba(79, 70, 229, 0.2);
+    }
+
+    #noteColor, #noteStatus {
+      appearance: none;
+      cursor: pointer;
+    }
+
+    #addNote {
+      background: var(--primary);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+      align-self: center;
+    }
+
+    #addNote:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+
+    #notesList {
+      list-style: none;
+      padding: 0;
+    }
+
+    #notesList li {
+      background: var(--card-bg);
+      margin-bottom: 10px;
+      padding: 15px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+      animation: fadeIn 0.3s ease-out;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    body.dark #notesList li {
+      background: var(--dark-card-bg);
+      color: var(--dark-text);
+    }
+
+    #notesList li:hover {
+      background: var(--primary);
+      color: white;
+    }
+
+    #notesList li .note-content {
+      flex-grow: 1;
+    }
+
+    #notesList li .status-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+      align-items: center;
+    }
+
+    #notesList li .status-container select {
+      padding: 6px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--card-bg);
+      color: var(--text);
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    body.dark #notesList li .status-container select {
+      background: var(--dark-card-bg);
+      border-color: var(--dark-border);
+      color: var(--dark-text);
+    }
+
+    #notesList li .status-container select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 8px rgba(79, 70, 229, 0.2);
+    }
+
+    #notesList li button {
+      padding: 6px 12px;
+      border-radius: 8px;
+      background: var(--primary);
+      color: white;
+      font-size: 0.85rem;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    #notesList li button:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+
+    .status-indicator {
+      font-size: 0.85rem;
+      font-weight: 500;
+      padding: 4px 8px;
+      border-radius: 6px;
+      display: inline-block;
+      margin-top: 5px;
+    }
+
+    .status-in-progress { background: var(--status-in-progress); color: white; }
+    .status-pending { background: var(--status-pending); color: white; }
+    .status-completed { background: var(--status-completed); color: white; }
+
+    body.dark .status-in-progress, body.dark .status-pending, body.dark .status-completed {
+      opacity: 0.9;
+    }
+
+    /* Large Tablets (1024px and below) */
+    @media (max-width: 1024px) {
+      h1 { font-size: 2.2rem; }
+      .notes-container { max-width: 90%; padding: 15px; }
+      #topBar { padding: 10px; }
+      #topBar button { padding: 8px 12px; font-size: 0.9rem; }
+      #darkModeToggle { font-size: 0.9rem; padding: 9px 12px; }
+      #searchInput, #noteTitle, #noteContent, #noteColor, #noteStatus { font-size: 0.9rem; padding: 10px; }
+      #addNote { font-size: 0.9rem; padding: 9px 18px; }
+      #notesList li { font-size: 0.85rem; padding: 12px; }
+      #notesList li .status-container select { font-size: 0.8rem; padding: 5px; }
+      #notesList li button { font-size: 0.8rem; padding: 5px 10px; }
+    }
+
+    /* Medium Tablets and Large Phones (768px and below) */
+    @media (max-width: 768px) {
+      h1 { font-size: 1.8rem; }
+      .notes-container { max-width: 95%; padding: 12px; }
+      #topBar { padding: 8px; }
+      #topBar button { padding: 7px 10px; font-size: 0.85rem; }
+      #darkModeToggle { font-size: 0.85rem; padding: 8px 10px; }
+      #searchInput, #noteTitle, #noteContent, #noteColor, #noteStatus { font-size: 0.85rem; padding: 8px; }
+      #noteContent { min-height: 80px; }
+      #addNote { font-size: 0.85rem; padding: 8px 16px; }
+      #notesList li { font-size: 0.8rem; padding: 10px; }
+      #notesList li .status-container select { font-size: 0.75rem; padding: 4px; }
+      #notesList li button { font-size: 0.75rem; padding: 4px 8px; }
+      body { padding: 70px 8px 15px; }
+    }
+
+    /* Small Phones (480px and below) */
+    @media (max-width: 480px) {
+      h1 { font-size: 1.5rem; }
+      .notes-container { max-width: 98%; padding: 10px; }
+      #topBar { padding: 6px; }
+      #topBar button { padding: 6px 8px; font-size: 0.75rem; width: 48%; text-align: center; }
+      #darkModeToggle { font-size: 0.8rem; padding: 7px 9px; left: 10px; top: 10px; }
+      #searchInput, #noteTitle, #noteContent, #noteColor, #noteStatus { font-size: 0.8rem; padding: 7px; }
+      #noteContent { min-height: 70px; }
+      #addNote { font-size: 0.8rem; padding: 7px 14px; }
+      #notesList li { font-size: 0.75rem; padding: 8px; }
+      #notesList li .status-container { flex-direction: column; align-items: flex-end; }
+      #notesList li .status-container select { font-size: 0.7rem; padding: 3px; }
+      #notesList li button { font-size: 0.7rem; padding: 3px 7px; }
+      .status-indicator { font-size: 0.7rem; padding: 3px 6px; }
+      body { padding: 60px 6px 10px; }
+    }
+
+    /* Extra Small Phones (360px and below) */
+    @media (max-width: 360px) {
+      h1 { font-size: 1.3rem; }
+      .notes-container { max-width: 100%; padding: 8px; }
+      #topBar { padding: 5px; }
+      #topBar button { padding: 5px 6px; font-size: 0.7rem; width: 100%; }
+      #darkModeToggle { font-size: 0.75rem; padding: 6px 8px; left: 8px; top: 8px; }
+      #searchInput, #noteTitle, #noteContent, #noteColor, #noteStatus { font-size: 0.75rem; padding: 6px; }
+      #noteContent { min-height: 60px; }
+      #addNote { font-size: 0.75rem; padding: 6px 12px; }
+      #notesList li { font-size: 0.7rem; padding: 6px; }
+      #notesList li .status-container { gap: 6px; }
+      #notesList li .status-container select { font-size: 0.65rem; padding: 2px; }
+      #notesList li button { font-size: 0.65rem; padding: 2px 6px; }
+      .status-indicator { font-size: 0.65rem; padding: 2px 5px; }
+      body { padding: 50px 5px 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="topBar">
+    <div style="margin: 0 auto; display: flex; gap: 8px; align-items: center;">
+      <button onclick="window.location.href='index.html'">Volver al Calendario 📅</button>
+      <button onclick="window.location.href='pomodoro.html'">Ir a Pomodoro ⏱</button>
+    </div>
+  </div>
+
+  <div id="darkModeToggle">🌙</div>
+
+  <h1>📝 Notas Rápidas</h1>
+  <div class="notes-container">
+    <div class="note-form">
+      <input type="text" id="searchInput" placeholder="Buscar notas...">
+      <input type="text" id="noteTitle" placeholder="Título de la nota">
+      <textarea id="noteContent" placeholder="Escribe tu nota aquí..."></textarea>
+      <select id="noteColor">
+        <option value="#4f46e5">Azul</option>
+        <option value="#ef4444">Rojo</option>
+        <option value="#10b981">Verde</option>
+        <option value="#f59e0b">Amarillo</option>
+        <option value="#8b5cf6">Púrpura</option>
+      </select>
+      <select id="noteStatus">
+        <option value="En proceso">En proceso</option>
+        <option value="En espera">En espera</option>
+        <option value="Finalizado">Finalizado</option>
+      </select>
+      <button id="addNote">Agregar Nota</button>
+    </div>
+    <ul id="notesList"></ul>
+  </div>
+
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      console.log('DOM fully loaded, initializing QuickNotes');
+
+      // DOM element references
+      const searchInput = document.getElementById('searchInput');
+      const noteTitle = document.getElementById('noteTitle');
+      const noteContent = document.getElementById('noteContent');
+      const noteColor = document.getElementById('noteColor');
+      const noteStatus = document.getElementById('noteStatus');
+      const addNoteBtn = document.getElementById('addNote');
+      const notesList = document.getElementById('notesList');
+      const darkModeToggle = document.getElementById('darkModeToggle');
+
+      // Check for missing DOM elements
+      if (!searchInput || !noteTitle || !noteContent || !noteColor || !noteStatus || !addNoteBtn || !notesList || !darkModeToggle) {
+        console.error('Missing DOM elements:', {
+          searchInput, noteTitle, noteContent, noteColor, noteStatus, addNoteBtn, notesList, darkModeToggle
+        });
+        alert('Error: No se encontraron algunos elementos de la página. Verifica la consola del navegador.');
+        return;
+      }
+
+      // Initialize notes from localStorage
+      let notes = [];
+      try {
+        const storedNotes = localStorage.getItem('quickNotes');
+        console.log('Raw localStorage quickNotes:', storedNotes);
+        if (storedNotes) {
+          notes = JSON.parse(storedNotes);
+          if (!Array.isArray(notes)) {
+            console.warn('Stored notes is not an array, resetting to empty array');
+            notes = [];
+          }
+        }
+        console.log('Loaded notes from localStorage:', notes);
+      } catch (error) {
+        console.error('Error loading notes from localStorage:', error);
+        alert('Error al cargar las notas guardadas. Se reiniciarán las notas. Verifica la consola del navegador.');
+        notes = [];
+        localStorage.setItem('quickNotes', JSON.stringify(notes));
+      }
+
+      function saveNotes() {
+        try {
+          console.log('Saving notes to localStorage:', notes);
+          localStorage.setItem('quickNotes', JSON.stringify(notes));
+        } catch (error) {
+          console.error('Error saving notes to localStorage:', error);
+          alert('Error al guardar las notas. Verifica la consola del navegador.');
+        }
+      }
+
+      function renderNotes(searchTerm = '') {
+        console.log('Rendering notes, searchTerm:', searchTerm);
+        try {
+          notesList.innerHTML = '';
+          const filteredNotes = notes.filter(note => {
+            if (!note || typeof note !== 'object' || !note.title || !note.content || !note.color || !note.status || !note.timestamp) {
+              console.warn('Skipping invalid note:', note);
+              return false;
+            }
+            return (
+              note.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              note.content.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+          });
+          console.log('Filtered notes:', filteredNotes);
+          filteredNotes.forEach((note, index) => {
+            try {
+              const li = document.createElement('li');
+              li.style.borderLeft = `4px solid ${note.color}`;
+              const noteContentDiv = document.createElement('div');
+              noteContentDiv.classList.add('note-content');
+              const statusClass = note.status.toLowerCase().replace(' ', '-') || 'in-progress';
+              noteContentDiv.innerHTML = `
+                <strong>${note.title}</strong><br>
+                ${note.content}<br>
+                <small>${new Date(note.timestamp).toLocaleString('es-ES')}</small><br>
+                <span class="status-indicator status-${statusClass}" data-status="${note.status}">
+                  ${note.status}
+                </span>
+              `;
+              li.appendChild(noteContentDiv);
+
+              const statusContainer = document.createElement('div');
+              statusContainer.classList.add('status-container');
+
+              const statusSelect = document.createElement('select');
+              statusSelect.innerHTML = `
+                <option value="En proceso" ${note.status === 'En proceso' ? 'selected' : ''}>En proceso</option>
+                <option value="En espera" ${note.status === 'En espera' ? 'selected' : ''}>En espera</option>
+                <option value="Finalizado" ${note.status === 'Finalizado' ? 'selected' : ''}>Finalizado</option>
+              `;
+              statusSelect.addEventListener('change', () => {
+                console.log('Status changed for note', index, 'to', statusSelect.value);
+                notes[index].status = statusSelect.value;
+                saveNotes();
+                renderNotes(searchInput.value);
+              });
+              statusContainer.appendChild(statusSelect);
+
+              const editBtn = document.createElement('button');
+              editBtn.textContent = 'Editar';
+              editBtn.addEventListener('click', () => {
+                console.log('Editing note:', note);
+                noteTitle.value = note.title;
+                noteContent.value = note.content;
+                noteColor.value = note.color;
+                noteStatus.value = note.status;
+                notes.splice(index, 1);
+                saveNotes();
+                renderNotes(searchInput.value);
+              });
+              statusContainer.appendChild(editBtn);
+
+              const deleteBtn = document.createElement('button');
+              deleteBtn.textContent = 'Eliminar';
+              deleteBtn.addEventListener('click', () => {
+                console.log('Deleting note:', index);
+                notes.splice(index, 1);
+                saveNotes();
+                renderNotes(searchInput.value);
+              });
+              statusContainer.appendChild(deleteBtn);
+
+              li.appendChild(statusContainer);
+              notesList.appendChild(li);
+            } catch (error) {
+              console.error('Error rendering individual note at index', index, ':', note, error);
+            }
+          });
+        } catch (error) {
+          console.error('Error rendering notes:', error);
+          alert('Error al mostrar las notas. Verifica la consola del navegador.');
+        }
+      }
+
+      addNoteBtn.addEventListener('click', () => {
+        console.log('Add Note button clicked');
+        const title = noteTitle.value.trim();
+        const content = noteContent.value.trim();
+        const color = noteColor.value;
+        const status = noteStatus.value;
+        console.log('Input values:', { title, content, color, status });
+
+        if (!title || !content) {
+          console.warn('Note not added: title or content is empty');
+          alert('Por favor, completa el título y el contenido de la nota.');
+          return;
+        }
+
+        const newNote = {
+          title,
+          content,
+          color,
+          status,
+          timestamp: new Date().toISOString()
+        };
+        console.log('Adding new note:', newNote);
+        notes.push(newNote);
+        console.log('Updated notes array:', notes);
+        noteTitle.value = '';
+        noteContent.value = '';
+        noteColor.value = '#4f46e5';
+        noteStatus.value = 'En proceso';
+        saveNotes();
+        renderNotes();
+      });
+
+      searchInput.addEventListener('input', () => {
+        console.log('Search input changed:', searchInput.value);
+        renderNotes(searchInput.value);
+      });
+
+      darkModeToggle.addEventListener('click', () => {
+        console.log('Dark mode toggle clicked');
+        document.body.classList.toggle('dark');
+        localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+        darkModeToggle.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
+      });
+
+      function setDarkMode() {
+        const isDark = localStorage.getItem('darkMode') === 'true';
+        if (isDark) {
+          document.body.classList.add('dark');
+          darkModeToggle.textContent = '☀️';
+        } else {
+          document.body.classList.remove('dark');
+          darkModeToggle.textContent = '🌙';
+        }
+      }
+
+      setDarkMode();
+      renderNotes();
+    });
+  </script>
+</body>
+</html>
